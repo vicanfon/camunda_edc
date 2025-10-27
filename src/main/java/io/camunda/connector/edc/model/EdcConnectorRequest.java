@@ -1,7 +1,6 @@
 package io.camunda.connector.edc.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.camunda.connector.api.annotation.Secret;
 
 import java.util.Objects;
 
@@ -111,14 +110,14 @@ public class EdcConnectorRequest {
         private String type = "api-key"; // api-key or basic
 
         @JsonProperty("apiKey")
-        @Secret
+        // @Secret annotation removed - add back if using Camunda runtime with secret support
         private String apiKey;
 
         @JsonProperty("username")
         private String username;
 
         @JsonProperty("password")
-        @Secret
+        // @Secret annotation removed - add back if using Camunda runtime with secret support
         private String password;
 
         public void validate() {
