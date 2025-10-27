@@ -1,6 +1,5 @@
 package com.example.connector;
 
-import io.camunda.connector.api.annotation.Secret;
 import jakarta.validation.constraints.NotBlank;
 
 /**
@@ -11,7 +10,7 @@ public class EdcConnectorInput {
     @NotBlank
     private String edcManagementUrl;
 
-    @Secret
+    // @Secret annotation removed - add back if using Camunda runtime with secret support
     @NotBlank
     private String edcApiKey;
 

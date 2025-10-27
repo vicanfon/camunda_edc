@@ -3,7 +3,6 @@ package com.example.connector;
 import io.camunda.connector.api.annotation.OutboundConnector;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
 import io.camunda.connector.api.outbound.OutboundConnectorFunction;
-import io.camunda.connector.api.json.ConnectorsObjectMapperSupplier;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +32,7 @@ import java.util.List;
 public class EdcDataConnector implements OutboundConnectorFunction {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EdcDataConnector.class);
-    private static final ObjectMapper objectMapper = ConnectorsObjectMapperSupplier.DEFAULT_MAPPER;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient;
 
     public EdcDataConnector() {
