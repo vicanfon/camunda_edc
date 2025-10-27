@@ -74,7 +74,7 @@ public class EdcService {
      * Query the EDC catalog for a specific asset
      */
     private JsonNode queryCatalog(EdcConnectorRequest request) throws Exception {
-        String catalogUrl = request.getEdcManagementUrl() + "/v2/catalog/request";
+        String catalogUrl = request.getEdcManagementUrl() + "/v3/catalog/request";
         String counterPartyAddress = request.getProviderUrl() + "/api/v1/dsp";
 
         LOGGER.info("Querying catalog at: {}", catalogUrl);
@@ -151,7 +151,7 @@ public class EdcService {
      * Negotiate a contract for the asset
      */
     private String negotiateContract(EdcConnectorRequest request, JsonNode catalogEntry) throws Exception {
-        String negotiationUrl = request.getEdcManagementUrl() + "/v2/contractnegotiations";
+        String negotiationUrl = request.getEdcManagementUrl() + "/v3/contractnegotiations";
         
         // Extract offer from catalog entry
         JsonNode offers = catalogEntry.get("odrl:hasPolicy");
@@ -206,7 +206,7 @@ public class EdcService {
      * Wait for contract negotiation to reach FINALIZED state
      */
     private String waitForNegotiation(EdcConnectorRequest request, String negotiationId) throws Exception {
-        String negotiationStateUrl = request.getEdcManagementUrl() + "/v2/contractnegotiations/" + negotiationId;
+        String negotiationStateUrl = request.getEdcManagementUrl() + "/v3/contractnegotiations/" + negotiationId;
         
         int maxAttempts = request.getTimeout();
         int attempt = 0;
@@ -246,7 +246,7 @@ public class EdcService {
      * Initiate a data transfer
      */
     private String initiateTransfer(EdcConnectorRequest request, String contractAgreementId) throws Exception {
-        String transferUrl = request.getEdcManagementUrl() + "/v2/transferprocesses";
+        String transferUrl = request.getEdcManagementUrl() + "/v3/transferprocesses";
         
         // Build transfer request
         Map<String, Object> transferRequest = new HashMap<>();
@@ -288,7 +288,7 @@ public class EdcService {
      * Retrieve data from completed transfer
      */
     private Object retrieveTransferData(EdcConnectorRequest request, String transferId) throws Exception {
-        String transferStateUrl = request.getEdcManagementUrl() + "/v2/transferprocesses/" + transferId;
+        String transferStateUrl = request.getEdcManagementUrl() + "/v3/transferprocesses/" + transferId;
         
         int maxAttempts = request.getTimeout();
         int attempt = 0;

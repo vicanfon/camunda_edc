@@ -45,7 +45,7 @@ Asset ID: your-asset-id
 #### Verify EDC Endpoints
 
 Your consumer EDC should expose:
-- Management API: `http://localhost:9193/management/v2/*`
+- Management API: `http://localhost:9193/management/v3/*`
 - Protocol (DSP) API: `http://localhost:8080/api/v1/dsp` (for incoming requests from other connectors)
 
 The provider EDC should expose:
@@ -53,7 +53,7 @@ The provider EDC should expose:
 
 #### Check EDC Version Compatibility
 
-This connector is built for **EDC 0.5.x - 0.8.x** with Management API v2 and DSP (Dataspace Protocol).
+This connector is built for **EDC 0.5.x - 0.8.x** with Management API v3 and DSP (Dataspace Protocol).
 
 If you're using a different EDC version, the API paths might differ:
 - EDC < 0.5.0: Uses older IDS protocol (not supported)
@@ -87,7 +87,7 @@ If you're using a different EDC version, the API paths might differ:
 ### 1. Test Management API Access
 
 ```bash
-curl -X GET "http://localhost:9193/management/v2/assets" \
+curl -X GET "http://localhost:9193/management/v3/assets" \
   -H "X-Api-Key: your-api-key"
 ```
 
@@ -96,7 +96,7 @@ Expected: 200 OK with list of assets
 ### 2. Test Catalog Query Directly
 
 ```bash
-curl -X POST "http://localhost:9193/management/v2/catalog/request" \
+curl -X POST "http://localhost:9193/management/v3/catalog/request" \
   -H "Content-Type: application/json" \
   -H "X-Api-Key: your-api-key" \
   -d '{
