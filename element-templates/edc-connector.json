@@ -50,7 +50,7 @@
     },
     {
       "label": "EDC Management URL",
-      "description": "The base URL of your EDC consumer connector management API (e.g., http://localhost:8080/management)",
+      "description": "Your consumer EDC connector's management API URL. Must include /management path. Examples: http://localhost:9193/management or http://consumer-edc:8080/management",
       "group": "configuration",
       "type": "String",
       "feel": "optional",
@@ -68,7 +68,7 @@
     },
     {
       "label": "Provider Connector URL",
-      "description": "The base URL of the provider's EDC connector (e.g., http://provider-connector:8080)",
+      "description": "Base URL of provider's EDC connector (WITHOUT /api/v1/dsp - this is added automatically). Examples: http://provider:8080 or http://host.docker.internal:8282",
       "group": "configuration",
       "type": "String",
       "feel": "optional",
