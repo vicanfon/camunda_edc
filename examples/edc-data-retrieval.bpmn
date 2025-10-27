@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" 
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
+                  xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" 
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
+                  id="Definitions_1" 
+                  targetNamespace="http://bpmn.io/schema/bpmn">
+  
+  <bpmn:process id="edc-data-retrieval-process" name="EDC Data Retrieval Process" isExecutable="true">
+    
+    <bpmn:startEvent id="StartEvent_1" name="Data Request Received">
+      <bpmn:outgoing>Flow_to_edc</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:sequenceFlow id="Flow_to_edc" sourceRef="StartEvent_1" targetRef="Activity_GetEDCData" />
+    
+    <!-- EDC Data Connector Task -->
+    <bpmn:serviceTask id="Activity_GetEDCData" name="Retrieve Data from EDC">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="io.camunda:edc-connector:1" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=&#34;http://localhost:9193/management&#34;" target="edcManagementUrl" />
+          <zeebe:input source="=secrets.EDC_API_KEY" target="edcApiKey" />
+          <zeebe:input source="=&#34;http://provider-edc:8282/api/v1/dsp&#34;" target="providerUrl" />
+          <zeebe:input source="=assetId" target="assetId" />
+        </zeebe:ioMapping>
+        <zeebe:taskHeaders>
+          <zeebe:header key="resultVariable" value="edcResult" />
+        </zeebe:taskHeaders>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_to_edc</bpmn:incoming>
+      <bpmn:outgoing>Flow_to_gateway</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:sequenceFlow id="Flow_to_gateway" sourceRef="Activity_GetEDCData" targetRef="Gateway_CheckSuccess" />
+    
+    <!-- Check if data retrieval was successful -->
+    <bpmn:exclusiveGateway id="Gateway_CheckSuccess" name="Data Retrieved Successfully?">
+      <bpmn:incoming>Flow_to_gateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_success</bpmn:outgoing>
+      <bpmn:outgoing>Flow_failure</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:sequenceFlow id="Flow_success" name="Yes" sourceRef="Gateway_CheckSuccess" targetRef="Activity_ProcessData">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=edcResult.success = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    
+    <bpmn:sequenceFlow id="Flow_failure" name="No" sourceRef="Gateway_CheckSuccess" targetRef="Activity_HandleError">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=edcResult.success = false</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    
+    <!-- Process the retrieved data -->
+    <bpmn:scriptTask id="Activity_ProcessData" name="Process Retrieved Data">
+      <bpmn:extensionElements>
+        <zeebe:script expression="=&#34;Data processed: &#34; + edcResult.data" resultVariable="processedData" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_success</bpmn:incoming>
+      <bpmn:outgoing>Flow_to_end_success</bpmn:outgoing>
+    </bpmn:scriptTask>
+    
+    <bpmn:sequenceFlow id="Flow_to_end_success" sourceRef="Activity_ProcessData" targetRef="EndEvent_Success" />
+    
+    <!-- Handle errors -->
+    <bpmn:scriptTask id="Activity_HandleError" name="Handle Error">
+      <bpmn:extensionElements>
+        <zeebe:script expression="=&#34;Error: &#34; + edcResult.errorMessage" resultVariable="errorLog" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_failure</bpmn:incoming>
+      <bpmn:outgoing>Flow_to_end_error</bpmn:outgoing>
+    </bpmn:scriptTask>
+    
+    <bpmn:sequenceFlow id="Flow_to_end_error" sourceRef="Activity_HandleError" targetRef="EndEvent_Error" />
+    
+    <bpmn:endEvent id="EndEvent_Success" name="Data Retrieved and Processed">
+      <bpmn:incoming>Flow_to_end_success</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <bpmn:endEvent id="EndEvent_Error" name="Error Occurred">
+      <bpmn:incoming>Flow_to_end_error</bpmn:incoming>
+      <bpmn:errorEventDefinition errorRef="Error_EDC_Failure" />
+    </bpmn:endEvent>
+    
+  </bpmn:process>
+  
+  <bpmn:error id="Error_EDC_Failure" name="EDC Data Retrieval Failed" errorCode="EDC_ERROR" />
+  
+  <!-- BPMN Diagram (visual representation) -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="edc-data-retrieval-process">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  
+</bpmn:definitions>
