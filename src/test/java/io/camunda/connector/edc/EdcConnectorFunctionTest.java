@@ -32,7 +32,7 @@ class EdcConnectorFunctionTest {
     void shouldExecuteSuccessfully() throws Exception {
         // Given
         EdcConnectorRequest request = new EdcConnectorRequest();
-        request.setEdcManagementUrl("http://localhost:19193/management");
+        request.setEdcManagementUrl("http://localhost:9193/management");
         request.setProviderUrl("http://provider:8080");
         request.setAssetId("test-asset");
 
@@ -84,7 +84,7 @@ class EdcConnectorFunctionTest {
     void shouldThrowExceptionWhenAssetIdIsMissing() {
         // Given
         EdcConnectorRequest request = new EdcConnectorRequest();
-        request.setEdcManagementUrl("http://localhost:19193/management");
+        request.setEdcManagementUrl("http://localhost:9193/management");
         request.setProviderUrl("http://provider:8080");
         // Missing assetId
 
@@ -102,7 +102,7 @@ class EdcConnectorFunctionTest {
     void shouldThrowExceptionWhenProviderUrlIsMissing() {
         // Given
         EdcConnectorRequest request = new EdcConnectorRequest();
-        request.setEdcManagementUrl("http://localhost:19193/management");
+        request.setEdcManagementUrl("http://localhost:9193/management");
         request.setAssetId("test-asset");
         // Missing providerUrl
 
@@ -120,7 +120,7 @@ class EdcConnectorFunctionTest {
     void shouldValidateApiKeyAuthentication() {
         // Given
         EdcConnectorRequest request = new EdcConnectorRequest();
-        request.setEdcManagementUrl("http://localhost:19193/management");
+        request.setEdcManagementUrl("http://localhost:9193/management");
         request.setProviderUrl("http://provider:8080");
         request.setAssetId("test-asset");
 
@@ -143,7 +143,7 @@ class EdcConnectorFunctionTest {
     void shouldValidateBasicAuthentication() {
         // Given
         EdcConnectorRequest request = new EdcConnectorRequest();
-        request.setEdcManagementUrl("http://localhost:19193/management");
+        request.setEdcManagementUrl("http://localhost:9193/management");
         request.setProviderUrl("http://provider:8080");
         request.setAssetId("test-asset");
 
@@ -167,7 +167,7 @@ class EdcConnectorFunctionTest {
     void shouldHandleEdcServiceException() throws Exception {
         // Given
         EdcConnectorRequest request = new EdcConnectorRequest();
-        request.setEdcManagementUrl("http://localhost:19193/management");
+        request.setEdcManagementUrl("http://localhost:9193/management");
         request.setProviderUrl("http://provider:8080");
         request.setAssetId("test-asset");
 

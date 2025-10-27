@@ -75,11 +75,15 @@ public class EdcService {
      */
     private JsonNode queryCatalog(EdcConnectorRequest request) throws Exception {
         String catalogUrl = request.getEdcManagementUrl() + "/v2/catalog/request";
-        
+        String counterPartyAddress = request.getProviderUrl() + "/api/v1/dsp";
+
+        LOGGER.info("Querying catalog at: {}", catalogUrl);
+        LOGGER.info("Provider DSP endpoint (counterPartyAddress): {}", counterPartyAddress);
+
         // Build catalog request body
         Map<String, Object> catalogRequest = new HashMap<>();
         catalogRequest.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
-        catalogRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/v1/dsp");
+        catalogRequest.put("counterPartyAddress", counterPartyAddress);
         catalogRequest.put("protocol", "dataspace-protocol-http");
         
         // Add query filter for specific asset if needed
@@ -101,10 +105,26 @@ public class EdcService {
         );
 
         HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-        
+
         if (response.statusCode() != 200) {
-            throw new RuntimeException("Failed to query catalog. Status: " + response.statusCode() + 
-                    ", Body: " + response.body());
+            String errorMsg = String.format(
+                "Failed to query catalog. Status: %d, Body: %s%n" +
+                "Configuration used:%n" +
+                "  - EDC Management URL: %s%n" +
+                "  - Catalog Endpoint: %s%n" +
+                "  - Provider DSP Address: %s%n" +
+                "Please verify:%n" +
+                "  1. EDC Management URL should end with /management (e.g., http://localhost:9193/management)%n" +
+                "  2. Provider URL should be base URL only (e.g., http://provider:8080)%n" +
+                "  3. EDC connector version is 0.5.0 or higher with DSP support%n" +
+                "See TROUBLESHOOTING.md for more details.",
+                response.statusCode(),
+                response.body(),
+                request.getEdcManagementUrl(),
+                catalogUrl,
+                counterPartyAddress
+            );
+            throw new RuntimeException(errorMsg);
         }
 
         JsonNode catalogResponse = objectMapper.readTree(response.body());

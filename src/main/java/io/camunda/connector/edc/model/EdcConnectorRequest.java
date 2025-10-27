@@ -31,12 +31,49 @@ public class EdcConnectorRequest {
         if (edcManagementUrl == null || edcManagementUrl.trim().isEmpty()) {
             throw new IllegalArgumentException("EDC Management URL is required");
         }
+
+        // Validate EDC Management URL format
+        if (!edcManagementUrl.startsWith("http://") && !edcManagementUrl.startsWith("https://")) {
+            throw new IllegalArgumentException(
+                "EDC Management URL must start with http:// or https://. Got: " + edcManagementUrl
+            );
+        }
+
+        // Check if management URL includes the /management path
+        if (!edcManagementUrl.contains("/management")) {
+            throw new IllegalArgumentException(
+                "EDC Management URL should include /management path. " +
+                "Example: http://localhost:9193/management. Got: " + edcManagementUrl +
+                "\nSee TROUBLESHOOTING.md for configuration details."
+            );
+        }
+
         if (assetId == null || assetId.trim().isEmpty()) {
             throw new IllegalArgumentException("Asset ID is required");
         }
+
         if (providerUrl == null || providerUrl.trim().isEmpty()) {
             throw new IllegalArgumentException("Provider URL is required");
         }
+
+        // Validate Provider URL format
+        if (!providerUrl.startsWith("http://") && !providerUrl.startsWith("https://")) {
+            throw new IllegalArgumentException(
+                "Provider URL must start with http:// or https://. Got: " + providerUrl
+            );
+        }
+
+        // Warn if provider URL includes /api/v1/dsp (common mistake)
+        if (providerUrl.contains("/api/v1/dsp") || providerUrl.contains("/api/dsp")) {
+            throw new IllegalArgumentException(
+                "Provider URL should be the base URL only, without /api/v1/dsp. " +
+                "The connector will append /api/v1/dsp automatically. " +
+                "Example: http://provider:8080 (not http://provider:8080/api/v1/dsp). " +
+                "Got: " + providerUrl +
+                "\nSee TROUBLESHOOTING.md for configuration details."
+            );
+        }
+
         if (authentication != null) {
             authentication.validate();
         }
