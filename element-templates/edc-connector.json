@@ -99,6 +99,7 @@
       }
     },
     {
+      "id": "authenticationType",
       "label": "Authentication Type",
       "description": "Choose the authentication method for EDC Management API",
       "group": "authentication",
@@ -124,6 +125,7 @@
       }
     },
     {
+      "id": "apiKey",
       "label": "API Key",
       "description": "API key for authentication with EDC Management API",
       "group": "authentication",
@@ -134,11 +136,12 @@
         "name": "authentication.apiKey"
       },
       "condition": {
-        "property": "authentication.type",
+        "property": "authenticationType",
         "equals": "api-key"
       }
     },
     {
+      "id": "username",
       "label": "Username",
       "description": "Username for basic authentication",
       "group": "authentication",
@@ -149,11 +152,12 @@
         "name": "authentication.username"
       },
       "condition": {
-        "property": "authentication.type",
+        "property": "authenticationType",
         "equals": "basic"
       }
     },
     {
+      "id": "password",
       "label": "Password",
       "description": "Password for basic authentication",
       "group": "authentication",
@@ -164,7 +168,7 @@
         "name": "authentication.password"
       },
       "condition": {
-        "property": "authentication.type",
+        "property": "authenticationType",
         "equals": "basic"
       }
     },
