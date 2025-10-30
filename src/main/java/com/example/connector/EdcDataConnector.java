@@ -108,6 +108,7 @@ public class EdcDataConnector implements OutboundConnectorFunction {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
         requestBody.put("counterPartyAddress", counterPartyAddress);
+        requestBody.put("counterPartyId", input.getProviderDid());
         requestBody.put("protocol", "dataspace-protocol-http");
         
         String jsonBody = objectMapper.writeValueAsString(requestBody);
@@ -170,6 +171,7 @@ public class EdcDataConnector implements OutboundConnectorFunction {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
         requestBody.put("counterPartyAddress", counterPartyAddress);
+        requestBody.put("counterPartyId", input.getProviderDid());
         requestBody.put("protocol", "dataspace-protocol-http");
         
         Map<String, Object> offerMap = new HashMap<>();
@@ -251,6 +253,7 @@ public class EdcDataConnector implements OutboundConnectorFunction {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
         requestBody.put("counterPartyAddress", counterPartyAddress);
+        requestBody.put("counterPartyId", input.getProviderDid());
         requestBody.put("contractId", agreementId);
         requestBody.put("assetId", input.getAssetId());
         requestBody.put("protocol", "dataspace-protocol-http");
