@@ -166,7 +166,7 @@ public class EdcService {
         // Build negotiation request
         Map<String, Object> negotiationRequest = new HashMap<>();
         negotiationRequest.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
-        negotiationRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/v1/dsp");
+        negotiationRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/dsp");
         negotiationRequest.put("protocol", "dataspace-protocol-http");
         
         Map<String, Object> offerMap = new HashMap<>();
@@ -253,7 +253,7 @@ public class EdcService {
         // Build transfer request
         Map<String, Object> transferRequest = new HashMap<>();
         transferRequest.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
-        transferRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/v1/dsp");
+        transferRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/dsp");
         transferRequest.put("contractId", contractAgreementId);
         transferRequest.put("assetId", request.getAssetId());
         transferRequest.put("protocol", "dataspace-protocol-http");

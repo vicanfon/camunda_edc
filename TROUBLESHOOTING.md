@@ -31,12 +31,12 @@ The connector requires TWO different URLs:
    - ✅ Correct: `http://host.docker.internal:8282`
    - ❌ Wrong: `http://provider-connector:8080/api/v1/dsp` (connector will append this automatically)
 
-The connector automatically appends `/api/v1/dsp` to the Provider URL for DSP protocol communication.
+The connector automatically appends `/api/dsp` to the Provider URL for DSP protocol communication.
 
 #### Example Configuration in Camunda Modeler
 
 ```yaml
-EDC Management URL: http://localhost:9193/management
+EDC Management URL: http://localhost:8081/management
 API Key: your-api-key-here
 Provider Connector URL: http://provider-host:8080
 Asset ID: your-asset-id
@@ -45,19 +45,20 @@ Asset ID: your-asset-id
 #### Verify EDC Endpoints
 
 Your consumer EDC should expose:
-- Management API: `http://localhost:9193/management/v3/*`
-- Protocol (DSP) API: `http://localhost:8080/api/v1/dsp` (for incoming requests from other connectors)
+- Management API: `http://localhost:8081/management/v3/*` or `http://localhost:9193/management/v3/*`
+- Protocol (DSP) API: `http://localhost:8092/api/dsp` (for incoming requests from other connectors)
 
 The provider EDC should expose:
-- Protocol (DSP) API: `http://provider:8080/api/v1/dsp`
+- Protocol (DSP) API: `http://provider:8092/api/dsp`
 
 #### Check EDC Version Compatibility
 
-This connector is built for **EDC 0.5.x - 0.8.x** with Management API v3 and DSP (Dataspace Protocol).
+This connector is built for **MVD (Minimum Viable Dataspace)** and **EDC 0.8.x+** with Management API v3 and DSP (Dataspace Protocol).
 
 If you're using a different EDC version, the API paths might differ:
 - EDC < 0.5.0: Uses older IDS protocol (not supported)
-- EDC >= 0.5.0: Uses DSP at `/api/v1/dsp`
+- EDC 0.5.x - 0.7.x: Uses Management API v2 and DSP at `/api/v1/dsp` (not compatible)
+- EDC 0.8.x+: Uses Management API v3 and DSP at `/api/dsp` (compatible)
 
 ### 2. Error: "API Key is required for api-key authentication"
 
@@ -84,27 +85,32 @@ If you're using a different EDC version, the API paths might differ:
 
 ## Testing Your Configuration
 
-### 1. Test Management API Access
+### 1. Test Management API Access (MVD Example)
 
 ```bash
-curl -X GET "http://localhost:9193/management/v3/assets" \
-  -H "X-Api-Key: your-api-key"
+curl -X POST "http://localhost:8081/management/v3/assets/request" \
+  -H "Content-Type: application/json" \
+  -H "X-Api-Key: password" \
+  -d '{"@context": {"@vocab": "https://w3id.org/edc/v0.0.1/ns/"}, "@type": "QuerySpec"}'
 ```
 
 Expected: 200 OK with list of assets
 
-### 2. Test Catalog Query Directly
+### 2. Test Catalog Query Directly (MVD Example)
 
 ```bash
-curl -X POST "http://localhost:9193/management/v3/catalog/request" \
+curl -X POST "http://localhost:8081/management/v3/catalog/request" \
   -H "Content-Type: application/json" \
-  -H "X-Api-Key: your-api-key" \
+  -H "X-Api-Key: password" \
   -d '{
-    "@context": {
-      "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
-    },
-    "counterPartyAddress": "http://provider-host:8080/api/v1/dsp",
-    "protocol": "dataspace-protocol-http"
+    "@context": ["https://w3id.org/edc/connector/management/v0.0.1"],
+    "@type": "CatalogRequest",
+    "counterPartyAddress": "http://localhost:8092/api/dsp",
+    "protocol": "dataspace-protocol-http",
+    "querySpec": {
+      "offset": 0,
+      "limit": 50
+    }
   }'
 ```
 
@@ -112,7 +118,7 @@ Expected: 200 OK with catalog containing datasets
 
 ### 3. Verify Provider DSP Endpoint
 
-The provider should have the DSP endpoint active. You won't be able to access it directly (it requires protocol-specific requests), but it should be configured in the provider's EDC.
+The provider should have the DSP endpoint active at `/api/dsp`. You won't be able to access it directly (it requires protocol-specific requests), but it should be configured in the provider's EDC.
 
 ## Docker/Kubernetes Networking
 

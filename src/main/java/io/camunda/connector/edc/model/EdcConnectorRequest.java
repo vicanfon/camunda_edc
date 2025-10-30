@@ -63,12 +63,12 @@ public class EdcConnectorRequest {
             );
         }
 
-        // Warn if provider URL includes /api/v1/dsp (common mistake)
-        if (providerUrl.contains("/api/v1/dsp") || providerUrl.contains("/api/dsp")) {
+        // Warn if provider URL includes /api/dsp (common mistake)
+        if (providerUrl.contains("/api/dsp")) {
             throw new IllegalArgumentException(
-                "Provider URL should be the base URL only, without /api/v1/dsp. " +
-                "The connector will append /api/v1/dsp automatically. " +
-                "Example: http://provider:8080 (not http://provider:8080/api/v1/dsp). " +
+                "Provider URL should be the base URL only, without /api/dsp. " +
+                "The connector will append /api/dsp automatically. " +
+                "Example: http://provider:8080 (not http://provider:8080/api/dsp). " +
                 "Got: " + providerUrl +
                 "\nSee TROUBLESHOOTING.md for configuration details."
             );
