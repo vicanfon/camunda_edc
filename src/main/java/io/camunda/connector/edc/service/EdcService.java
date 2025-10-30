@@ -15,6 +15,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -90,11 +91,11 @@ public class EdcService {
         
         // Add query filter for specific asset if needed
         Map<String, Object> querySpec = new HashMap<>();
-        querySpec.put("filterExpression", Map.of(
-            "operandLeft", "https://w3id.org/edc/v0.0.1/ns/id",
-            "operator", "=",
-            "operandRight", request.getAssetId()
-        ));
+        querySpec.put("filterExpression", List.of(Map.of(
+                "operandLeft", "https://w3id.org/edc/v0.0.1/ns/id",
+                "operator", "=",
+                "operandRight", request.getAssetId()
+        )));
         catalogRequest.put("querySpec", querySpec);
 
         String requestBody = objectMapper.writeValueAsString(catalogRequest);
@@ -139,14 +140,148 @@ public class EdcService {
 
         // Find the specific asset
         for (JsonNode dataset : datasets) {
-            JsonNode id = dataset.get("@id");
-            if (id != null && id.asText().equals(request.getAssetId())) {
+            if (matchesAsset(dataset, request.getAssetId())) {
                 LOGGER.info("Found asset in catalog: {}", request.getAssetId());
                 return dataset;
             }
         }
 
-        throw new RuntimeException("Asset not found in catalog: " + request.getAssetId());
+        StringBuilder availableAssets = new StringBuilder();
+        for (JsonNode dataset : datasets) {
+            JsonNode rawId = dataset.get("@id");
+            if (rawId != null) {
+                availableAssets.append(rawId.asText()).append(", ");
+            }
+            JsonNode edcId = dataset.get("https://w3id.org/edc/v0.0.1/ns/id");
+            if (edcId != null) {
+                availableAssets.append(edcId.asText()).append(", ");
+            }
+        }
+
+        String available = availableAssets.length() > 0
+                ? availableAssets.substring(0, availableAssets.length() - 2)
+                : "<none>";
+
+        throw new RuntimeException("Asset not found in catalog: " + request.getAssetId()
+                + ". Available assets: " + available);
+    }
+
+    private boolean matchesAsset(JsonNode dataset, String assetId) {
+        if (dataset == null || assetId == null) {
+            return false;
+        }
+
+        if (matchesValue(dataset.get("@id"), assetId)) {
+            return true;
+        }
+
+        if (matchesValue(dataset.get("https://w3id.org/edc/v0.0.1/ns/id"), assetId)) {
+            return true;
+        }
+
+        if (matchesValue(dataset.get("https://w3id.org/edc/v0.0.1/ns/assetId"), assetId)) {
+            return true;
+        }
+
+        if (matchesValue(dataset.get("dct:identifier"), assetId)) {
+            return true;
+        }
+
+        JsonNode policies = dataset.get("odrl:hasPolicy");
+        if (policies != null) {
+            if (policies.isArray()) {
+                for (JsonNode policy : policies) {
+                    if (assetMatchesPolicy(policy, assetId)) {
+                        return true;
+                    }
+                }
+            } else if (assetMatchesPolicy(policies, assetId)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean assetMatchesPolicy(JsonNode policy, String assetId) {
+        if (policy == null || assetId == null) {
+            return false;
+        }
+
+        if (matchesValue(policy.get("odrl:target"), assetId)) {
+            return true;
+        }
+
+        if (matchesValue(policy.get("https://w3id.org/edc/v0.0.1/ns/target"), assetId)) {
+            return true;
+        }
+
+        JsonNode constraints = policy.get("odrl:constraint");
+        if (constraints != null) {
+            if (constraints.isArray()) {
+                for (JsonNode constraint : constraints) {
+                    if (constraintMatches(constraint, assetId)) {
+                        return true;
+                    }
+                }
+            } else if (constraintMatches(constraints, assetId)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean constraintMatches(JsonNode constraint, String assetId) {
+        if (constraint == null) {
+            return false;
+        }
+
+        JsonNode leftOperand = constraint.get("odrl:leftOperand");
+        if (!matchesValue(leftOperand, "https://w3id.org/edc/v0.0.1/ns/id")
+                && !matchesValue(leftOperand, "https://w3id.org/edc/v0.0.1/ns/assetId")) {
+            return false;
+        }
+
+        return matchesValue(constraint.get("odrl:rightOperand"), assetId)
+                || matchesValue(constraint.get("https://w3id.org/edc/v0.0.1/ns/rightOperand"), assetId);
+    }
+
+    private boolean matchesValue(JsonNode node, String expected) {
+        if (node == null || expected == null) {
+            return false;
+        }
+
+        if (node.isTextual()) {
+            return expected.equals(node.asText());
+        }
+
+        if (node.isNumber()) {
+            return expected.equals(node.asText());
+        }
+
+        if (node.isObject()) {
+            JsonNode idNode = node.get("@id");
+            if (matchesValue(idNode, expected)) {
+                return true;
+            }
+
+            for (JsonNode value : node) {
+                if (matchesValue(value, expected)) {
+                    return true;
+                }
+            }
+        }
+
+        if (node.isArray()) {
+            for (JsonNode value : node) {
+                if (matchesValue(value, expected)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
