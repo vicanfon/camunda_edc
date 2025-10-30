@@ -74,8 +74,8 @@ public class EdcService {
      * Query the EDC catalog for a specific asset
      */
     private JsonNode queryCatalog(EdcConnectorRequest request) throws Exception {
-        String catalogUrl = request.getEdcManagementUrl() + "/v2/catalog/request";
-        String counterPartyAddress = request.getProviderUrl() + "/api/v1/dsp";
+        String catalogUrl = request.getEdcManagementUrl() + "/v3/catalog/request";
+        String counterPartyAddress = request.getProviderUrl() + "/api/dsp";
 
         LOGGER.info("Querying catalog at: {}", catalogUrl);
         LOGGER.info("Provider DSP endpoint (counterPartyAddress): {}", counterPartyAddress);
@@ -151,7 +151,7 @@ public class EdcService {
      * Negotiate a contract for the asset
      */
     private String negotiateContract(EdcConnectorRequest request, JsonNode catalogEntry) throws Exception {
-        String negotiationUrl = request.getEdcManagementUrl() + "/v2/contractnegotiations";
+        String negotiationUrl = request.getEdcManagementUrl() + "/v3/contractnegotiations";
         
         // Extract offer from catalog entry
         JsonNode offers = catalogEntry.get("odrl:hasPolicy");
@@ -164,7 +164,7 @@ public class EdcService {
         // Build negotiation request
         Map<String, Object> negotiationRequest = new HashMap<>();
         negotiationRequest.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
-        negotiationRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/v1/dsp");
+        negotiationRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/dsp");
         negotiationRequest.put("protocol", "dataspace-protocol-http");
         
         Map<String, Object> offerMap = new HashMap<>();
@@ -206,7 +206,7 @@ public class EdcService {
      * Wait for contract negotiation to reach FINALIZED state
      */
     private String waitForNegotiation(EdcConnectorRequest request, String negotiationId) throws Exception {
-        String negotiationStateUrl = request.getEdcManagementUrl() + "/v2/contractnegotiations/" + negotiationId;
+        String negotiationStateUrl = request.getEdcManagementUrl() + "/v3/contractnegotiations/" + negotiationId;
         
         int maxAttempts = request.getTimeout();
         int attempt = 0;
@@ -246,12 +246,12 @@ public class EdcService {
      * Initiate a data transfer
      */
     private String initiateTransfer(EdcConnectorRequest request, String contractAgreementId) throws Exception {
-        String transferUrl = request.getEdcManagementUrl() + "/v2/transferprocesses";
+        String transferUrl = request.getEdcManagementUrl() + "/v3/transferprocesses";
         
         // Build transfer request
         Map<String, Object> transferRequest = new HashMap<>();
         transferRequest.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
-        transferRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/v1/dsp");
+        transferRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/dsp");
         transferRequest.put("contractId", contractAgreementId);
         transferRequest.put("assetId", request.getAssetId());
         transferRequest.put("protocol", "dataspace-protocol-http");
@@ -288,7 +288,7 @@ public class EdcService {
      * Retrieve data from completed transfer
      */
     private Object retrieveTransferData(EdcConnectorRequest request, String transferId) throws Exception {
-        String transferStateUrl = request.getEdcManagementUrl() + "/v2/transferprocesses/" + transferId;
+        String transferStateUrl = request.getEdcManagementUrl() + "/v3/transferprocesses/" + transferId;
         
         int maxAttempts = request.getTimeout();
         int attempt = 0;
