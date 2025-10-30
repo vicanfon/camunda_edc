@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  */
 @OutboundConnector(
     name = "EDC Connector",
-    inputVariables = {"edcManagementUrl", "assetId", "providerUrl", "authentication"},
+    inputVariables = {"edcManagementUrl", "assetId", "providerUrl", "providerDid", "authentication"},
     type = "io.camunda:edc-connector:1"
 )
 public class EdcConnectorFunction implements OutboundConnectorFunction {
@@ -45,8 +45,8 @@ public class EdcConnectorFunction implements OutboundConnectorFunction {
         // Bind input variables to request object
         final EdcConnectorRequest request = context.bindVariables(EdcConnectorRequest.class);
         
-        LOGGER.info("EDC Connector request: Management URL={}, Asset ID={}, Provider URL={}", 
-            request.getEdcManagementUrl(), request.getAssetId(), request.getProviderUrl());
+        LOGGER.info("EDC Connector request: Management URL={}, Asset ID={}, Provider URL={}, Provider DID={}",
+            request.getEdcManagementUrl(), request.getAssetId(), request.getProviderUrl(), request.getProviderDid());
         
         // Validate request
         request.validate();

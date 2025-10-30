@@ -76,10 +76,11 @@ public class EdcService {
     private JsonNode queryCatalog(EdcConnectorRequest request) throws Exception {
         String catalogUrl = request.getEdcManagementUrl() + "/v3/catalog/request";
         String counterPartyAddress = request.getProviderUrl() + "/api/dsp";
-        String counterPartyId = "did:web:provider-identityhub%3A7083:provider";
+        String counterPartyId = request.getProviderDid();
 
         LOGGER.info("Querying catalog at: {}", catalogUrl);
         LOGGER.info("Provider DSP endpoint (counterPartyAddress): {}", counterPartyAddress);
+        LOGGER.info("Provider DID (counterPartyId): {}", counterPartyId);
 
         // Build catalog request body
         Map<String, Object> catalogRequest = new HashMap<>();
@@ -130,19 +131,35 @@ public class EdcService {
         }
 
         JsonNode catalogResponse = objectMapper.readTree(response.body());
-        
+
+        LOGGER.info("Catalog response received. Parsing datasets...");
+
         // Extract the datasets array
         JsonNode datasets = catalogResponse.get("dcat:dataset");
         if (datasets == null || !datasets.isArray() || datasets.isEmpty()) {
+            LOGGER.error("No datasets found in catalog response. Full response: {}", response.body());
             throw new RuntimeException("Asset not found in catalog: " + request.getAssetId());
         }
+
+        LOGGER.info("Found {} datasets in catalog", datasets.size());
 
         // Find the specific asset
         for (JsonNode dataset : datasets) {
             JsonNode id = dataset.get("@id");
-            if (id != null && id.asText().equals(request.getAssetId())) {
-                LOGGER.info("Found asset in catalog: {}", request.getAssetId());
+            String datasetId = id != null ? id.asText() : null;
+            LOGGER.debug("Checking dataset with @id: {}", datasetId);
+
+            if (datasetId != null && datasetId.equals(request.getAssetId())) {
+                LOGGER.info("Found matching asset in catalog: {}", request.getAssetId());
                 return dataset;
+            }
+        }
+
+        LOGGER.error("Asset '{}' not found in catalog. Available assets:", request.getAssetId());
+        for (JsonNode dataset : datasets) {
+            JsonNode id = dataset.get("@id");
+            if (id != null) {
+                LOGGER.error("  - {}", id.asText());
             }
         }
 
@@ -167,6 +184,7 @@ public class EdcService {
         Map<String, Object> negotiationRequest = new HashMap<>();
         negotiationRequest.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
         negotiationRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/dsp");
+        negotiationRequest.put("counterPartyId", request.getProviderDid());
         negotiationRequest.put("protocol", "dataspace-protocol-http");
         
         Map<String, Object> offerMap = new HashMap<>();
@@ -254,6 +272,7 @@ public class EdcService {
         Map<String, Object> transferRequest = new HashMap<>();
         transferRequest.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
         transferRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/dsp");
+        transferRequest.put("counterPartyId", request.getProviderDid());
         transferRequest.put("contractId", contractAgreementId);
         transferRequest.put("assetId", request.getAssetId());
         transferRequest.put("protocol", "dataspace-protocol-http");
