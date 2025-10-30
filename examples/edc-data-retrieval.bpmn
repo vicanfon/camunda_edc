@@ -20,10 +20,11 @@
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="io.camunda:edc-connector:1" />
         <zeebe:ioMapping>
-          <zeebe:input source="=&#34;http://localhost:9193/management&#34;" target="edcManagementUrl" />
-          <zeebe:input source="=secrets.EDC_API_KEY" target="edcApiKey" />
-          <zeebe:input source="=&#34;http://provider-edc:8282/api/v1/dsp&#34;" target="providerUrl" />
-          <zeebe:input source="=assetId" target="assetId" />
+          <zeebe:input source="=&#34;http://host.docker.internal/consumer/cp/api/management&#34;" target="edcManagementUrl" />
+          <zeebe:input source="=&#34;http://provider-qna-controlplane:8082&#34;" target="providerUrl" />
+          <zeebe:input source="=&#34;did:web:provider-identityhub%3A7083:provider&#34;" target="providerDid" />
+          <zeebe:input source="=&#34;asset-1&#34;" target="assetId" />
+          <zeebe:input source="={&#34;type&#34;: &#34;api-key&#34;, &#34;apiKey&#34;: &#34;password&#34;}" target="authentication" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
           <zeebe:header key="resultVariable" value="edcResult" />
