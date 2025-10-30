@@ -156,7 +156,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"@context\": {\n    \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\"\n  },\n  \"counterPartyAddress\": \"{{provider_url}}/api/dsp\",\n  \"counterPartyId\": \"{{provider_did}}\",\n  \"protocol\": \"dataspace-protocol-http\",\n  \"offer\": {\n    \"offerId\": \"{{offer_id}}\",\n    \"assetId\": \"{{asset_id}}\",\n    \"policy\": {{offer_policy}}\n  }\n}"
+          "raw": "{\n  \"@context\": [\n    \"https://w3id.org/edc/connector/management/v0.0.1\"\n  ],\n  \"@type\": \"ContractRequest\",\n  \"counterPartyAddress\": \"{{provider_url}}/api/dsp\",\n  \"counterPartyId\": \"{{provider_did}}\",\n  \"protocol\": \"dataspace-protocol-http\",\n  \"policy\": {{offer_policy}},\n  \"callbackAddresses\": []\n}"
         },
         "url": {
           "raw": "{{management_url}}/v3/contractnegotiations",
