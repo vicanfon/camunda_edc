@@ -13,8 +13,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -134,14 +136,27 @@ public class EdcService {
 
         LOGGER.info("Catalog response received. Parsing datasets...");
 
-        // Extract the datasets array
-        JsonNode datasets = catalogResponse.get("dcat:dataset");
-        if (datasets == null || !datasets.isArray() || datasets.isEmpty()) {
+        // Extract the datasets - can be either an array or a single object
+        JsonNode datasetsNode = catalogResponse.get("dcat:dataset");
+        if (datasetsNode == null) {
             LOGGER.error("No datasets found in catalog response. Full response: {}", response.body());
             throw new RuntimeException("Asset not found in catalog: " + request.getAssetId());
         }
 
-        LOGGER.info("Found {} datasets in catalog", datasets.size());
+        // Handle both single dataset (object) and multiple datasets (array)
+        List<JsonNode> datasets = new ArrayList<>();
+        if (datasetsNode.isArray()) {
+            // Multiple datasets
+            datasetsNode.forEach(datasets::add);
+        } else if (datasetsNode.isObject()) {
+            // Single dataset
+            datasets.add(datasetsNode);
+        } else {
+            LOGGER.error("Unexpected dataset format in catalog response. Full response: {}", response.body());
+            throw new RuntimeException("Asset not found in catalog: " + request.getAssetId());
+        }
+
+        LOGGER.info("Found {} dataset(s) in catalog", datasets.size());
 
         // Find the specific asset
         for (JsonNode dataset : datasets) {
