@@ -28,7 +28,8 @@ Apply the "EDC Data Connector" template to a Service Task with these values:
 ```yaml
 EDC Management URL:     http://localhost/consumer/cp/api/management
 Provider Connector URL: http://provider-qna-controlplane:8082
-Asset ID:               normal-asset-1
+Provider DID:           did:web:provider-identityhub%3A7083:provider
+Asset ID:               asset-1
 Authentication Type:    api-key
 API Key:                password
 Result Variable:        edcResult
@@ -48,9 +49,17 @@ Result Variable:        edcResult
 - `:8082` is the DSP protocol endpoint port
 - The connector automatically appends `/api/dsp` to this URL
 
-**Asset ID** = `normal-asset-1`
+**Provider DID** = `did:web:provider-identityhub%3A7083:provider`
+- Decentralized Identifier (DID) of the provider connector
+- Required for DSP authentication and verifiable credentials
+- MVD uses DID-based authentication between connectors
+- The token audience claim must match this DID for authentication to succeed
+- Find this in your provider's configuration or Postman environment variables
+
+**Asset ID** = `asset-1`
 - This is the asset you want to retrieve from the provider's catalog
 - Must match an asset that exists in the provider's catalog
+- Use the test script to query the catalog and see available assets
 
 **API Key** = `password`
 - This is the default API key for MVD deployments
@@ -97,6 +106,18 @@ Provider Connector URL: http://provider-qna-controlplane:8082/api/dsp
 Provider Connector URL: http://provider-qna-controlplane:8082
 ```
 **Why correct**: The connector appends `/api/dsp` when needed.
+
+### ❌ Wrong: Missing Provider DID
+```yaml
+Provider DID: (empty or missing)
+```
+**Why wrong**: The provider will reject catalog requests with "401 Unauthorized" if the provider DID is not included for authentication.
+
+### ✓ Correct: Include Provider DID
+```yaml
+Provider DID: did:web:provider-identityhub%3A7083:provider
+```
+**Why correct**: The provider DID is required for DSP authentication and must match the provider's configured DID.
 
 ## Deployment Steps
 

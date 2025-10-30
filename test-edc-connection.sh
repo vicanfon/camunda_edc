@@ -19,14 +19,17 @@ NC='\033[0m' # No Color
 # Configuration - UPDATE THESE VALUES BASED ON YOUR SETUP
 # Consumer Management URL: Ingress URL (for Camunda outside K8s)
 # Provider URL: Internal K8s service name (for consumer EDC inside K8s to reach provider)
+# Provider DID: Decentralized Identifier for authentication
 CONSUMER_MGMT_URL="http://localhost/consumer/cp/api/management"
 PROVIDER_BASE_URL="http://provider-qna-controlplane:8082"
+PROVIDER_DID="did:web:provider-identityhub%3A7083:provider"
 API_KEY="password"
-ASSET_ID="normal-asset-1"
+ASSET_ID="asset-1"
 
 echo "Testing with configuration:"
 echo "  Consumer Management URL: $CONSUMER_MGMT_URL"
 echo "  Provider Base URL: $PROVIDER_BASE_URL"
+echo "  Provider DID: $PROVIDER_DID"
 echo "  API Key: $API_KEY"
 echo "  Asset ID: $ASSET_ID"
 echo ""
@@ -68,6 +71,7 @@ CATALOG_REQUEST="{
   \"@context\": [\"https://w3id.org/edc/connector/management/v0.0.1\"],
   \"@type\": \"CatalogRequest\",
   \"counterPartyAddress\": \"$PROVIDER_BASE_URL/api/dsp\",
+  \"counterPartyId\": \"$PROVIDER_DID\",
   \"protocol\": \"dataspace-protocol-http\",
   \"querySpec\": {\"offset\": 0, \"limit\": 50}
 }"
@@ -144,6 +148,7 @@ echo ""
 echo "Connector Configuration:"
 echo "  EDC Management URL:     $CONSUMER_MGMT_URL"
 echo "  Provider Connector URL: $PROVIDER_BASE_URL"
+echo "  Provider DID:           $PROVIDER_DID"
 echo "  Asset ID:               $ASSET_ID"
 echo "  Authentication Type:    api-key"
 echo "  API Key:                $API_KEY"

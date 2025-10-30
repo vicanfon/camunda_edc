@@ -18,6 +18,9 @@ public class EdcConnectorInput {
     private String providerUrl;
 
     @NotBlank
+    private String providerDid;
+
+    @NotBlank
     private String assetId;
 
     private Authentication authentication;
@@ -44,6 +47,14 @@ public class EdcConnectorInput {
 
     public void setProviderUrl(String providerUrl) {
         this.providerUrl = providerUrl;
+    }
+
+    public String getProviderDid() {
+        return providerDid;
+    }
+
+    public void setProviderDid(String providerDid) {
+        this.providerDid = providerDid;
     }
 
     public String getAssetId() {

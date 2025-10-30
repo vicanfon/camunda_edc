@@ -85,6 +85,24 @@
       }
     },
     {
+      "label": "Provider DID",
+      "description": "The Decentralized Identifier (DID) of the provider connector for authentication. Example: did:web:provider-identityhub%3A7083:provider",
+      "group": "configuration",
+      "type": "String",
+      "feel": "optional",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "providerDid"
+      },
+      "constraints": {
+        "notEmpty": true,
+        "pattern": {
+          "value": "^did:.*",
+          "message": "Must be a valid DID (starting with 'did:')"
+        }
+      }
+    },
+    {
       "label": "Asset ID",
       "description": "The ID of the asset you want to retrieve from the EDC catalog",
       "group": "asset",
