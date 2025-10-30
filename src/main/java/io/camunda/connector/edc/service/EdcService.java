@@ -130,19 +130,35 @@ public class EdcService {
         }
 
         JsonNode catalogResponse = objectMapper.readTree(response.body());
-        
+
+        LOGGER.info("Catalog response received. Parsing datasets...");
+
         // Extract the datasets array
         JsonNode datasets = catalogResponse.get("dcat:dataset");
         if (datasets == null || !datasets.isArray() || datasets.isEmpty()) {
+            LOGGER.error("No datasets found in catalog response. Full response: {}", response.body());
             throw new RuntimeException("Asset not found in catalog: " + request.getAssetId());
         }
+
+        LOGGER.info("Found {} datasets in catalog", datasets.size());
 
         // Find the specific asset
         for (JsonNode dataset : datasets) {
             JsonNode id = dataset.get("@id");
-            if (id != null && id.asText().equals(request.getAssetId())) {
-                LOGGER.info("Found asset in catalog: {}", request.getAssetId());
+            String datasetId = id != null ? id.asText() : null;
+            LOGGER.debug("Checking dataset with @id: {}", datasetId);
+
+            if (datasetId != null && datasetId.equals(request.getAssetId())) {
+                LOGGER.info("Found matching asset in catalog: {}", request.getAssetId());
                 return dataset;
+            }
+        }
+
+        LOGGER.error("Asset '{}' not found in catalog. Available assets:", request.getAssetId());
+        for (JsonNode dataset : datasets) {
+            JsonNode id = dataset.get("@id");
+            if (id != null) {
+                LOGGER.error("  - {}", id.asText());
             }
         }
 
