@@ -34,6 +34,7 @@ class EdcConnectorFunctionTest {
         EdcConnectorRequest request = new EdcConnectorRequest();
         request.setEdcManagementUrl("http://localhost:9193/management");
         request.setProviderUrl("http://provider:8080");
+        request.setProviderDid("did:web:provider:test");
         request.setAssetId("test-asset");
 
         EdcConnectorResponse expectedResponse = new EdcConnectorResponse(
@@ -122,6 +123,7 @@ class EdcConnectorFunctionTest {
         EdcConnectorRequest request = new EdcConnectorRequest();
         request.setEdcManagementUrl("http://localhost:9193/management");
         request.setProviderUrl("http://provider:8080");
+        request.setProviderDid("did:web:provider:test");
         request.setAssetId("test-asset");
 
         EdcConnectorRequest.Authentication auth = new EdcConnectorRequest.Authentication();
@@ -145,6 +147,7 @@ class EdcConnectorFunctionTest {
         EdcConnectorRequest request = new EdcConnectorRequest();
         request.setEdcManagementUrl("http://localhost:9193/management");
         request.setProviderUrl("http://provider:8080");
+        request.setProviderDid("did:web:provider:test");
         request.setAssetId("test-asset");
 
         EdcConnectorRequest.Authentication auth = new EdcConnectorRequest.Authentication();
@@ -169,6 +172,7 @@ class EdcConnectorFunctionTest {
         EdcConnectorRequest request = new EdcConnectorRequest();
         request.setEdcManagementUrl("http://localhost:9193/management");
         request.setProviderUrl("http://provider:8080");
+        request.setProviderDid("did:web:provider:test");
         request.setAssetId("test-asset");
 
         when(mockEdcService.executeEdcWorkflow(any(EdcConnectorRequest.class)))
