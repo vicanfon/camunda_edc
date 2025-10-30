@@ -98,10 +98,16 @@ public class EdcDataConnector implements OutboundConnectorFunction {
      */
     private String requestCatalog(EdcConnectorInput input) throws Exception {
         String endpoint = input.getEdcManagementUrl() + "/v3/catalog/request";
-        
+
+        // Build counter party address with DSP endpoint
+        String counterPartyAddress = input.getProviderUrl();
+        if (!counterPartyAddress.endsWith("/api/dsp")) {
+            counterPartyAddress = counterPartyAddress + "/api/dsp";
+        }
+
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
-        requestBody.put("counterPartyAddress", input.getProviderUrl());
+        requestBody.put("counterPartyAddress", counterPartyAddress);
         requestBody.put("protocol", "dataspace-protocol-http");
         
         String jsonBody = objectMapper.writeValueAsString(requestBody);
@@ -150,14 +156,20 @@ public class EdcDataConnector implements OutboundConnectorFunction {
     @SuppressWarnings("unchecked")
     private String initiateContractNegotiation(EdcConnectorInput input, Map<String, Object> dataset) throws Exception {
         String endpoint = input.getEdcManagementUrl() + "/v3/contractnegotiations";
-        
+
         // Extract offer from dataset
         Map<String, Object> offer = (Map<String, Object>) dataset.get("odrl:hasPolicy");
         String offerId = (String) offer.get("@id");
-        
+
+        // Build counter party address with DSP endpoint
+        String counterPartyAddress = input.getProviderUrl();
+        if (!counterPartyAddress.endsWith("/api/dsp")) {
+            counterPartyAddress = counterPartyAddress + "/api/dsp";
+        }
+
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
-        requestBody.put("counterPartyAddress", input.getProviderUrl());
+        requestBody.put("counterPartyAddress", counterPartyAddress);
         requestBody.put("protocol", "dataspace-protocol-http");
         
         Map<String, Object> offerMap = new HashMap<>();
@@ -229,10 +241,16 @@ public class EdcDataConnector implements OutboundConnectorFunction {
      */
     private String initiateTransfer(EdcConnectorInput input, String agreementId) throws Exception {
         String endpoint = input.getEdcManagementUrl() + "/v3/transferprocesses";
-        
+
+        // Build counter party address with DSP endpoint
+        String counterPartyAddress = input.getProviderUrl();
+        if (!counterPartyAddress.endsWith("/api/dsp")) {
+            counterPartyAddress = counterPartyAddress + "/api/dsp";
+        }
+
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
-        requestBody.put("counterPartyAddress", input.getProviderUrl());
+        requestBody.put("counterPartyAddress", counterPartyAddress);
         requestBody.put("contractId", agreementId);
         requestBody.put("assetId", input.getAssetId());
         requestBody.put("protocol", "dataspace-protocol-http");
