@@ -105,19 +105,19 @@ X-Api-Key: {{api_key}}
 Content-Type: application/json
 
 {
-  "@context": {
-    "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
-  },
+  "@context": [
+    "https://w3id.org/edc/connector/management/v0.0.1"
+  ],
+  "@type": "ContractRequest",
   "counterPartyAddress": "{{provider_url}}/api/dsp",
   "counterPartyId": "{{provider_did}}",
   "protocol": "dataspace-protocol-http",
-  "offer": {
-    "offerId": "{{offer_id}}",
-    "assetId": "{{asset_id}}",
-    "policy": {{offer_policy}}
-  }
+  "policy": {{offer_policy}},
+  "callbackAddresses": []
 }
 ```
+
+**Note**: The `policy` field contains the entire offer object from Step 1's catalog response. It includes `@id`, `@type`, `permission`, `prohibition`, `obligation`, and `target` fields.
 
 **Expected Response** (200 or 201):
 ```json
@@ -140,9 +140,10 @@ Content-Type: application/json
 
 **Common Errors**:
 - **400 Bad Request**:
-  - Check if `offer_id` variable is set (run Step 1 first)
-  - Check if the offer policy structure is correct
+  - Check if `offer_policy` variable is set (run Step 1 first)
+  - Check if the policy structure from catalog is correct
   - Verify provider URL and DID are correct
+  - Ensure the `@context` and `@type` fields match EDC Management API v3 spec
 - **404**: Incorrect endpoint URL
 
 ---
@@ -202,17 +203,18 @@ X-Api-Key: {{api_key}}
 Content-Type: application/json
 
 {
-  "@context": {
-    "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
-  },
-  "counterPartyAddress": "{{provider_url}}/api/dsp",
-  "counterPartyId": "{{provider_did}}",
-  "contractId": "{{agreement_id}}",
+  "@context": [
+    "https://w3id.org/edc/connector/management/v0.0.1"
+  ],
   "assetId": "{{asset_id}}",
-  "protocol": "dataspace-protocol-http",
+  "counterPartyAddress": "{{provider_url}}/api/dsp",
+  "connectorId": "{{provider_did}}",
+  "contractId": "{{agreement_id}}",
   "dataDestination": {
     "type": "HttpProxy"
-  }
+  },
+  "protocol": "dataspace-protocol-http",
+  "transferType": "HttpData-PULL"
 }
 ```
 

@@ -210,19 +210,18 @@ public class EdcService {
 
         LOGGER.info("Using offer with ID: {}", offer.get("@id").asText());
 
-        // Build negotiation request
+        // Build negotiation request according to EDC Management API v3 spec
         Map<String, Object> negotiationRequest = new HashMap<>();
-        negotiationRequest.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
+        negotiationRequest.put("@context", List.of("https://w3id.org/edc/connector/management/v0.0.1"));
+        negotiationRequest.put("@type", "ContractRequest");
         negotiationRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/dsp");
         negotiationRequest.put("counterPartyId", request.getProviderDid());
         negotiationRequest.put("protocol", "dataspace-protocol-http");
-        
-        Map<String, Object> offerMap = new HashMap<>();
-        offerMap.put("offerId", offer.get("@id").asText());
-        offerMap.put("assetId", request.getAssetId());
-        offerMap.put("policy", offer);
-        
-        negotiationRequest.put("offer", offerMap);
+
+        // Use the policy directly from the catalog offer
+        // The offer from catalog is already in the correct format
+        negotiationRequest.put("policy", objectMapper.convertValue(offer, Map.class));
+        negotiationRequest.put("callbackAddresses", List.of());
 
         String requestBody = objectMapper.writeValueAsString(negotiationRequest);
         
@@ -297,20 +296,22 @@ public class EdcService {
      */
     private String initiateTransfer(EdcConnectorRequest request, String contractAgreementId) throws Exception {
         String transferUrl = request.getEdcManagementUrl() + "/v3/transferprocesses";
-        
-        // Build transfer request
+
+        // Build transfer request according to EDC Management API v3 spec
         Map<String, Object> transferRequest = new HashMap<>();
-        transferRequest.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
-        transferRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/dsp");
-        transferRequest.put("counterPartyId", request.getProviderDid());
-        transferRequest.put("contractId", contractAgreementId);
+        transferRequest.put("@context", List.of("https://w3id.org/edc/connector/management/v0.0.1"));
         transferRequest.put("assetId", request.getAssetId());
-        transferRequest.put("protocol", "dataspace-protocol-http");
-        
+        transferRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/dsp");
+        transferRequest.put("connectorId", request.getProviderDid());
+        transferRequest.put("contractId", contractAgreementId);
+
         // Configure data destination (HTTP pull)
         Map<String, Object> dataDestination = new HashMap<>();
         dataDestination.put("type", "HttpProxy");
         transferRequest.put("dataDestination", dataDestination);
+
+        transferRequest.put("protocol", "dataspace-protocol-http");
+        transferRequest.put("transferType", "HttpData-PULL");
 
         String requestBody = objectMapper.writeValueAsString(transferRequest);
         
