@@ -76,6 +76,7 @@ public class EdcService {
     private JsonNode queryCatalog(EdcConnectorRequest request) throws Exception {
         String catalogUrl = request.getEdcManagementUrl() + "/v3/catalog/request";
         String counterPartyAddress = request.getProviderUrl() + "/api/dsp";
+        String counterPartyId = "did:web:provider-identityhub%3A7083:provider";
 
         LOGGER.info("Querying catalog at: {}", catalogUrl);
         LOGGER.info("Provider DSP endpoint (counterPartyAddress): {}", counterPartyAddress);
@@ -84,6 +85,7 @@ public class EdcService {
         Map<String, Object> catalogRequest = new HashMap<>();
         catalogRequest.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
         catalogRequest.put("counterPartyAddress", counterPartyAddress);
+        catalogRequest.put("counterPartyId", counterPartyId);
         catalogRequest.put("protocol", "dataspace-protocol-http");
         
         // Add query filter for specific asset if needed

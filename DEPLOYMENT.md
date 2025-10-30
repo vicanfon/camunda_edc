@@ -121,4 +121,4 @@ After deployment, verify the connector is loaded:
 ### Connection issues
 - Verify EDC connector URLs are reachable from connector runtime
 - Check network policies in Kubernetes
-- Test connectivity: `curl http://your-edc:9193/management/v2/catalog/request`
+- Test connectivity: `curl http://your-edc:9193/management/v3/catalog/request`

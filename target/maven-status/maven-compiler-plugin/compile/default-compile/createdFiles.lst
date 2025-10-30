@@ -1,0 +1,9 @@
+com/example/connector/EdcConnectorInput.class
+io/camunda/connector/edc/service/EdcService.class
+com/example/connector/EdcConnectorResult.class
+io/camunda/connector/edc/model/EdcConnectorRequest.class
+com/example/connector/EdcDataConnector.class
+io/camunda/connector/edc/model/EdcConnectorResponse.class
+io/camunda/connector/edc/EdcConnectorFunction.class
+io/camunda/connector/edc/model/EdcConnectorRequest$Authentication.class
+com/example/connector/EdcConnectorInput$Authentication.class

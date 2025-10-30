@@ -97,7 +97,7 @@ public class EdcDataConnector implements OutboundConnectorFunction {
      * Request the catalog from the provider connector
      */
     private String requestCatalog(EdcConnectorInput input) throws Exception {
-        String endpoint = input.getEdcManagementUrl() + "/v2/catalog/request";
+        String endpoint = input.getEdcManagementUrl() + "/v3/catalog/request";
         
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
@@ -149,7 +149,7 @@ public class EdcDataConnector implements OutboundConnectorFunction {
      */
     @SuppressWarnings("unchecked")
     private String initiateContractNegotiation(EdcConnectorInput input, Map<String, Object> dataset) throws Exception {
-        String endpoint = input.getEdcManagementUrl() + "/v2/contractnegotiations";
+        String endpoint = input.getEdcManagementUrl() + "/v3/contractnegotiations";
         
         // Extract offer from dataset
         Map<String, Object> offer = (Map<String, Object>) dataset.get("odrl:hasPolicy");
@@ -190,7 +190,7 @@ public class EdcDataConnector implements OutboundConnectorFunction {
      */
     @SuppressWarnings("unchecked")
     private String waitForNegotiationCompletion(EdcConnectorInput input, String negotiationId) throws Exception {
-        String endpoint = input.getEdcManagementUrl() + "/v2/contractnegotiations/" + negotiationId;
+        String endpoint = input.getEdcManagementUrl() + "/v3/contractnegotiations/" + negotiationId;
         
         int maxAttempts = 30;
         int attemptCount = 0;
@@ -228,7 +228,7 @@ public class EdcDataConnector implements OutboundConnectorFunction {
      * Initiate data transfer
      */
     private String initiateTransfer(EdcConnectorInput input, String agreementId) throws Exception {
-        String endpoint = input.getEdcManagementUrl() + "/v2/transferprocesses";
+        String endpoint = input.getEdcManagementUrl() + "/v3/transferprocesses";
         
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
@@ -266,7 +266,7 @@ public class EdcDataConnector implements OutboundConnectorFunction {
      */
     @SuppressWarnings("unchecked")
     private String waitForTransferAndGetData(EdcConnectorInput input, String transferProcessId) throws Exception {
-        String endpoint = input.getEdcManagementUrl() + "/v2/transferprocesses/" + transferProcessId;
+        String endpoint = input.getEdcManagementUrl() + "/v3/transferprocesses/" + transferProcessId;
         
         int maxAttempts = 30;
         int attemptCount = 0;
