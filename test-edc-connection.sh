@@ -17,9 +17,10 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Configuration - UPDATE THESE VALUES BASED ON YOUR SETUP
-# Using ingress URLs (for Camunda outside K8s)
+# Consumer Management URL: Ingress URL (for Camunda outside K8s)
+# Provider URL: Internal K8s service name (for consumer EDC inside K8s to reach provider)
 CONSUMER_MGMT_URL="http://localhost/consumer/cp/api/management"
-PROVIDER_BASE_URL="http://localhost/provider-qna"
+PROVIDER_BASE_URL="http://provider-qna-controlplane:8082"
 API_KEY="password"
 ASSET_ID="normal-asset-1"
 
