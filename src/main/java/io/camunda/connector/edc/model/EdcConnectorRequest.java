@@ -15,6 +15,9 @@ public class EdcConnectorRequest {
     @JsonProperty("providerUrl")
     private String providerUrl;
 
+    @JsonProperty("providerDid")
+    private String providerDid;
+
     @JsonProperty("assetId")
     private String assetId;
 
@@ -56,6 +59,10 @@ public class EdcConnectorRequest {
             throw new IllegalArgumentException("Provider URL is required");
         }
 
+        if (providerDid == null || providerDid.trim().isEmpty()) {
+            throw new IllegalArgumentException("Provider DID is required for authentication");
+        }
+
         // Validate Provider URL format
         if (!providerUrl.startsWith("http://") && !providerUrl.startsWith("https://")) {
             throw new IllegalArgumentException(
@@ -94,6 +101,14 @@ public class EdcConnectorRequest {
 
     public void setProviderUrl(String providerUrl) {
         this.providerUrl = providerUrl;
+    }
+
+    public String getProviderDid() {
+        return providerDid;
+    }
+
+    public void setProviderDid(String providerDid) {
+        this.providerDid = providerDid;
     }
 
     public String getAssetId() {

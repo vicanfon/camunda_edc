@@ -76,10 +76,11 @@ public class EdcService {
     private JsonNode queryCatalog(EdcConnectorRequest request) throws Exception {
         String catalogUrl = request.getEdcManagementUrl() + "/v3/catalog/request";
         String counterPartyAddress = request.getProviderUrl() + "/api/dsp";
-        String counterPartyId = "did:web:provider-identityhub%3A7083:provider";
+        String counterPartyId = request.getProviderDid();
 
         LOGGER.info("Querying catalog at: {}", catalogUrl);
         LOGGER.info("Provider DSP endpoint (counterPartyAddress): {}", counterPartyAddress);
+        LOGGER.info("Provider DID (counterPartyId): {}", counterPartyId);
 
         // Build catalog request body
         Map<String, Object> catalogRequest = new HashMap<>();
@@ -183,6 +184,7 @@ public class EdcService {
         Map<String, Object> negotiationRequest = new HashMap<>();
         negotiationRequest.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
         negotiationRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/dsp");
+        negotiationRequest.put("counterPartyId", request.getProviderDid());
         negotiationRequest.put("protocol", "dataspace-protocol-http");
         
         Map<String, Object> offerMap = new HashMap<>();
@@ -270,6 +272,7 @@ public class EdcService {
         Map<String, Object> transferRequest = new HashMap<>();
         transferRequest.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
         transferRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/dsp");
+        transferRequest.put("counterPartyId", request.getProviderDid());
         transferRequest.put("contractId", contractAgreementId);
         transferRequest.put("assetId", request.getAssetId());
         transferRequest.put("protocol", "dataspace-protocol-http");
