@@ -1,0 +1,336 @@
+{
+  "info": {
+    "name": "EDC Connector Debug Collection",
+    "description": "API calls made by the Camunda EDC Connector - Use this to test and debug the EDC workflow",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "management_url",
+      "value": "http://host.docker.internal/consumer/cp/api/management",
+      "type": "string"
+    },
+    {
+      "key": "provider_url",
+      "value": "http://provider-qna-controlplane:8082",
+      "type": "string"
+    },
+    {
+      "key": "provider_did",
+      "value": "did:web:provider-identityhub%3A7083:provider",
+      "type": "string"
+    },
+    {
+      "key": "asset_id",
+      "value": "asset-1",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "password",
+      "type": "string"
+    },
+    {
+      "key": "negotiation_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "agreement_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "transfer_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "offer_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Step 1: Query Catalog",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Parse response",
+              "var jsonData = pm.response.json();",
+              "",
+              "// Extract dataset",
+              "var dataset = jsonData['dcat:dataset'];",
+              "if (Array.isArray(dataset)) {",
+              "    dataset = dataset[0];",
+              "}",
+              "",
+              "// Save offer ID for next request",
+              "var offer = dataset['odrl:hasPolicy'];",
+              "if (Array.isArray(offer)) {",
+              "    offer = offer[0];",
+              "}",
+              "",
+              "if (offer && offer['@id']) {",
+              "    pm.collectionVariables.set('offer_id', offer['@id']);",
+              "    console.log('Offer ID saved:', offer['@id']);",
+              "",
+              "    // Save the entire offer object as a string for the negotiation request",
+              "    pm.collectionVariables.set('offer_policy', JSON.stringify(offer));",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Api-Key",
+            "value": "{{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"@context\": {\n    \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\"\n  },\n  \"counterPartyAddress\": \"{{provider_url}}/api/dsp\",\n  \"counterPartyId\": \"{{provider_did}}\",\n  \"protocol\": \"dataspace-protocol-http\",\n  \"querySpec\": {\n    \"filterExpression\": {\n      \"operandLeft\": \"https://w3id.org/edc/v0.0.1/ns/id\",\n      \"operator\": \"=\",\n      \"operandRight\": \"{{asset_id}}\"\n    }\n  }\n}"
+        },
+        "url": {
+          "raw": "{{management_url}}/v3/catalog/request",
+          "host": ["{{management_url}}"],
+          "path": ["v3", "catalog", "request"]
+        },
+        "description": "Queries the EDC catalog for the specified asset. The response will contain the dataset with offer/policy information needed for contract negotiation."
+      },
+      "response": []
+    },
+    {
+      "name": "Step 2: Initiate Contract Negotiation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save negotiation ID for status checks",
+              "var jsonData = pm.response.json();",
+              "if (jsonData['@id']) {",
+              "    pm.collectionVariables.set('negotiation_id', jsonData['@id']);",
+              "    console.log('Negotiation ID saved:', jsonData['@id']);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Check if offer_id is set from previous request",
+              "var offerId = pm.collectionVariables.get('offer_id');",
+              "if (!offerId) {",
+              "    console.error('ERROR: offer_id not set. Please run Step 1 first!');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Api-Key",
+            "value": "{{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"@context\": {\n    \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\"\n  },\n  \"counterPartyAddress\": \"{{provider_url}}/api/dsp\",\n  \"counterPartyId\": \"{{provider_did}}\",\n  \"protocol\": \"dataspace-protocol-http\",\n  \"offer\": {\n    \"offerId\": \"{{offer_id}}\",\n    \"assetId\": \"{{asset_id}}\",\n    \"policy\": {{offer_policy}}\n  }\n}"
+        },
+        "url": {
+          "raw": "{{management_url}}/v3/contractnegotiations",
+          "host": ["{{management_url}}"],
+          "path": ["v3", "contractnegotiations"]
+        },
+        "description": "Initiates a contract negotiation using the offer from the catalog response. Note: You must run Step 1 first to populate the offer_id and offer_policy variables."
+      },
+      "response": []
+    },
+    {
+      "name": "Step 3: Check Negotiation Status",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Check if negotiation is finalized and save agreement ID",
+              "var jsonData = pm.response.json();",
+              "console.log('Negotiation state:', jsonData.state);",
+              "",
+              "if (jsonData.state === 'FINALIZED' && jsonData.contractAgreementId) {",
+              "    pm.collectionVariables.set('agreement_id', jsonData.contractAgreementId);",
+              "    console.log('Agreement ID saved:', jsonData.contractAgreementId);",
+              "} else if (jsonData.state === 'TERMINATED' || jsonData.state === 'ERROR') {",
+              "    console.error('Negotiation failed with state:', jsonData.state);",
+              "} else {",
+              "    console.log('Negotiation still in progress. Run this request again in a few seconds.');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Api-Key",
+            "value": "{{api_key}}"
+          }
+        ],
+        "url": {
+          "raw": "{{management_url}}/v3/contractnegotiations/{{negotiation_id}}",
+          "host": ["{{management_url}}"],
+          "path": ["v3", "contractnegotiations", "{{negotiation_id}}"]
+        },
+        "description": "Polls the negotiation status. Run this repeatedly until the state becomes 'FINALIZED'. The agreement ID will be automatically saved for the next step."
+      },
+      "response": []
+    },
+    {
+      "name": "Step 4: Initiate Transfer",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save transfer ID for status checks",
+              "var jsonData = pm.response.json();",
+              "if (jsonData['@id']) {",
+              "    pm.collectionVariables.set('transfer_id', jsonData['@id']);",
+              "    console.log('Transfer ID saved:', jsonData['@id']);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Check if agreement_id is set from previous request",
+              "var agreementId = pm.collectionVariables.get('agreement_id');",
+              "if (!agreementId) {",
+              "    console.error('ERROR: agreement_id not set. Please run Steps 2 and 3 first!');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Api-Key",
+            "value": "{{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"@context\": {\n    \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\"\n  },\n  \"counterPartyAddress\": \"{{provider_url}}/api/dsp\",\n  \"counterPartyId\": \"{{provider_did}}\",\n  \"contractId\": \"{{agreement_id}}\",\n  \"assetId\": \"{{asset_id}}\",\n  \"protocol\": \"dataspace-protocol-http\",\n  \"dataDestination\": {\n    \"type\": \"HttpProxy\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{management_url}}/v3/transferprocesses",
+          "host": ["{{management_url}}"],
+          "path": ["v3", "transferprocesses"]
+        },
+        "description": "Initiates a data transfer using the contract agreement from the negotiation. Uses HttpProxy type for EDR (Endpoint Data Reference) retrieval."
+      },
+      "response": []
+    },
+    {
+      "name": "Step 5: Check Transfer Status",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Check transfer state and show EDR endpoint when ready",
+              "var jsonData = pm.response.json();",
+              "console.log('Transfer state:', jsonData.state);",
+              "",
+              "if ((jsonData.state === 'STARTED' || jsonData.state === 'COMPLETED') && jsonData.dataAddress) {",
+              "    console.log('Transfer ready! EDR endpoint:', jsonData.dataAddress.endpoint);",
+              "    console.log('Authorization code:', jsonData.dataAddress.authorization);",
+              "    ",
+              "    // Save for manual data fetch",
+              "    pm.collectionVariables.set('edr_endpoint', jsonData.dataAddress.endpoint);",
+              "    pm.collectionVariables.set('edr_auth', jsonData.dataAddress.authorization);",
+              "} else if (jsonData.state === 'TERMINATED' || jsonData.state === 'ERROR') {",
+              "    console.error('Transfer failed with state:', jsonData.state);",
+              "} else {",
+              "    console.log('Transfer still in progress. Run this request again in a few seconds.');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Api-Key",
+            "value": "{{api_key}}"
+          }
+        ],
+        "url": {
+          "raw": "{{management_url}}/v3/transferprocesses/{{transfer_id}}",
+          "host": ["{{management_url}}"],
+          "path": ["v3", "transferprocesses", "{{transfer_id}}"]
+        },
+        "description": "Polls the transfer status. Run this repeatedly until the state becomes 'STARTED' or 'COMPLETED'. The EDR endpoint and authorization will be displayed in the console."
+      },
+      "response": []
+    },
+    {
+      "name": "Step 6: Fetch Actual Data (EDR)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{edr_auth}}",
+            "description": "Auth code from transfer response"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{edr_endpoint}}",
+          "host": ["{{edr_endpoint}}"]
+        },
+        "description": "Fetches the actual data from the EDR endpoint. This endpoint and authorization code come from the transfer response in Step 5. Note: You may need to manually set edr_endpoint variable if it's a full URL."
+      },
+      "response": []
+    }
+  ]
+}
