@@ -17,8 +17,9 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Configuration - UPDATE THESE VALUES BASED ON YOUR SETUP
-CONSUMER_MGMT_URL="http://localhost:9193/api/management"
-PROVIDER_BASE_URL="http://localhost:9092"
+# Using ingress URLs (for Camunda outside K8s)
+CONSUMER_MGMT_URL="http://localhost/consumer/cp/api/management"
+PROVIDER_BASE_URL="http://localhost/provider-qna"
 API_KEY="password"
 ASSET_ID="normal-asset-1"
 
