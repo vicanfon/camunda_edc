@@ -186,15 +186,30 @@ public class EdcService {
      */
     private String negotiateContract(EdcConnectorRequest request, JsonNode catalogEntry) throws Exception {
         String negotiationUrl = request.getEdcManagementUrl() + "/v3/contractnegotiations";
-        
-        // Extract offer from catalog entry
-        JsonNode offers = catalogEntry.get("odrl:hasPolicy");
-        if (offers == null || !offers.isArray() || offers.isEmpty()) {
+
+        // Extract offer from catalog entry - can be either an array or a single object
+        JsonNode offersNode = catalogEntry.get("odrl:hasPolicy");
+        if (offersNode == null) {
             throw new RuntimeException("No offers found for asset: " + request.getAssetId());
         }
 
-        JsonNode offer = offers.get(0);
-        
+        // Handle both single offer (object) and multiple offers (array)
+        JsonNode offer;
+        if (offersNode.isArray()) {
+            // Multiple offers - take the first one
+            if (offersNode.isEmpty()) {
+                throw new RuntimeException("No offers found for asset: " + request.getAssetId());
+            }
+            offer = offersNode.get(0);
+        } else if (offersNode.isObject()) {
+            // Single offer
+            offer = offersNode;
+        } else {
+            throw new RuntimeException("Unexpected offer format for asset: " + request.getAssetId());
+        }
+
+        LOGGER.info("Using offer with ID: {}", offer.get("@id").asText());
+
         // Build negotiation request
         Map<String, Object> negotiationRequest = new HashMap<>();
         negotiationRequest.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
