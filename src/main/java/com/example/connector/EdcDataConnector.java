@@ -26,7 +26,7 @@ import java.util.List;
  */
 @OutboundConnector(
     name = "EDC Data Connector",
-    inputVariables = {"edcManagementUrl", "edcApiKey", "providerUrl", "assetId", "authentication"},
+    inputVariables = {"edcManagementUrl", "edcApiKey", "providerUrl", "providerDid", "assetId", "authentication"},
     type = "io.camunda:edc-connector:1"
 )
 public class EdcDataConnector implements OutboundConnectorFunction {
@@ -44,9 +44,11 @@ public class EdcDataConnector implements OutboundConnectorFunction {
     @Override
     public Object execute(OutboundConnectorContext context) throws Exception {
         var input = context.bindVariables(EdcConnectorInput.class);
-        
+
         LOGGER.info("Starting EDC data retrieval for asset: {}", input.getAssetId());
-        
+        LOGGER.debug("Configuration: managementUrl={}, providerUrl={}, providerDid={}, assetId={}",
+                    input.getEdcManagementUrl(), input.getProviderUrl(), input.getProviderDid(), input.getAssetId());
+
         try {
             // Step 1: Request catalog from provider
             String catalogResponse = requestCatalog(input);
@@ -88,7 +90,17 @@ public class EdcDataConnector implements OutboundConnectorFunction {
             LOGGER.error("Error executing EDC connector", e);
             EdcConnectorResult errorResult = new EdcConnectorResult();
             errorResult.setSuccess(false);
-            errorResult.setErrorMessage(e.getMessage());
+
+            // Provide detailed error message
+            String errorMessage = e.getMessage();
+            if (errorMessage == null || errorMessage.isEmpty()) {
+                errorMessage = "Error: " + e.getClass().getSimpleName();
+                if (e.getCause() != null) {
+                    errorMessage += " - Cause: " + e.getCause().getMessage();
+                }
+            }
+
+            errorResult.setErrorMessage(errorMessage);
             return errorResult;
         }
     }
