@@ -253,7 +253,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"@context\": {\n    \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\"\n  },\n  \"counterPartyAddress\": \"{{provider_url}}/api/dsp\",\n  \"counterPartyId\": \"{{provider_did}}\",\n  \"contractId\": \"{{agreement_id}}\",\n  \"assetId\": \"{{asset_id}}\",\n  \"protocol\": \"dataspace-protocol-http\",\n  \"dataDestination\": {\n    \"type\": \"HttpProxy\"\n  }\n}"
+          "raw": "{\n  \"@context\": [\n    \"https://w3id.org/edc/connector/management/v0.0.1\"\n  ],\n  \"assetId\": \"{{asset_id}}\",\n  \"counterPartyAddress\": \"{{provider_url}}/api/dsp\",\n  \"connectorId\": \"{{provider_did}}\",\n  \"contractId\": \"{{agreement_id}}\",\n  \"dataDestination\": {\n    \"type\": \"HttpProxy\"\n  },\n  \"protocol\": \"dataspace-protocol-http\",\n  \"transferType\": \"HttpData-PULL\"\n}"
         },
         "url": {
           "raw": "{{management_url}}/v3/transferprocesses",

@@ -296,20 +296,22 @@ public class EdcService {
      */
     private String initiateTransfer(EdcConnectorRequest request, String contractAgreementId) throws Exception {
         String transferUrl = request.getEdcManagementUrl() + "/v3/transferprocesses";
-        
-        // Build transfer request
+
+        // Build transfer request according to EDC Management API v3 spec
         Map<String, Object> transferRequest = new HashMap<>();
-        transferRequest.put("@context", Map.of("@vocab", "https://w3id.org/edc/v0.0.1/ns/"));
-        transferRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/dsp");
-        transferRequest.put("counterPartyId", request.getProviderDid());
-        transferRequest.put("contractId", contractAgreementId);
+        transferRequest.put("@context", List.of("https://w3id.org/edc/connector/management/v0.0.1"));
         transferRequest.put("assetId", request.getAssetId());
-        transferRequest.put("protocol", "dataspace-protocol-http");
-        
+        transferRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/dsp");
+        transferRequest.put("connectorId", request.getProviderDid());
+        transferRequest.put("contractId", contractAgreementId);
+
         // Configure data destination (HTTP pull)
         Map<String, Object> dataDestination = new HashMap<>();
         dataDestination.put("type", "HttpProxy");
         transferRequest.put("dataDestination", dataDestination);
+
+        transferRequest.put("protocol", "dataspace-protocol-http");
+        transferRequest.put("transferType", "HttpData-PULL");
 
         String requestBody = objectMapper.writeValueAsString(transferRequest);
         

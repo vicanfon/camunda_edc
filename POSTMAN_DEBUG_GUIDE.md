@@ -203,17 +203,18 @@ X-Api-Key: {{api_key}}
 Content-Type: application/json
 
 {
-  "@context": {
-    "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
-  },
-  "counterPartyAddress": "{{provider_url}}/api/dsp",
-  "counterPartyId": "{{provider_did}}",
-  "contractId": "{{agreement_id}}",
+  "@context": [
+    "https://w3id.org/edc/connector/management/v0.0.1"
+  ],
   "assetId": "{{asset_id}}",
-  "protocol": "dataspace-protocol-http",
+  "counterPartyAddress": "{{provider_url}}/api/dsp",
+  "connectorId": "{{provider_did}}",
+  "contractId": "{{agreement_id}}",
   "dataDestination": {
     "type": "HttpProxy"
-  }
+  },
+  "protocol": "dataspace-protocol-http",
+  "transferType": "HttpData-PULL"
 }
 ```
 
