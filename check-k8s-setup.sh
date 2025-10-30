@@ -39,25 +39,41 @@ echo ""
 
 # Check 4: Test Management API
 echo "4. Testing Consumer Management API..."
-echo "   Testing via ingress (http://localhost/consumer/cp/management/v3/assets/request)..."
+echo "   Testing via ingress (http://localhost/consumer/cp/api/management/v3/assets/request)..."
 
 MGMT_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
-  "http://localhost/consumer/cp/management/v3/assets/request" \
+  "http://localhost/consumer/cp/api/management/v3/assets/request" \
   -H "Content-Type: application/json" \
   -H "X-Api-Key: password" \
   -d '{"@context": {"@vocab": "https://w3id.org/edc/v0.0.1/ns/"}, "@type": "QuerySpec"}' 2>/dev/null)
 
 if [ "$MGMT_RESPONSE" = "200" ]; then
     echo "   ✓ Management API accessible via ingress (HTTP $MGMT_RESPONSE)"
-    MGMT_URL="http://localhost/consumer/cp/management"
+    MGMT_URL="http://localhost/consumer/cp/api/management"
 elif [ "$MGMT_RESPONSE" = "401" ]; then
     echo "   ⚠ Management API found but authentication failed (HTTP $MGMT_RESPONSE)"
     echo "     Check your API key"
-    MGMT_URL="http://localhost/consumer/cp/management"
+    MGMT_URL="http://localhost/consumer/cp/api/management"
 else
     echo "   ✗ Management API not accessible via ingress (HTTP $MGMT_RESPONSE)"
-    echo "     Trying port-forward method..."
-    MGMT_URL="http://consumer-controlplane:8082/management"
+    echo "     This may indicate the ingress uses /management instead of /api/management"
+    echo "     Trying alternative path without /api prefix..."
+
+    # Try without /api prefix
+    MGMT_RESPONSE_ALT=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+      "http://localhost/consumer/cp/management/v3/assets/request" \
+      -H "Content-Type: application/json" \
+      -H "X-Api-Key: password" \
+      -d '{"@context": {"@vocab": "https://w3id.org/edc/v0.0.1/ns/"}, "@type": "QuerySpec"}' 2>/dev/null)
+
+    if [ "$MGMT_RESPONSE_ALT" = "200" ] || [ "$MGMT_RESPONSE_ALT" = "401" ]; then
+        echo "   ✓ Management API accessible at /management (without /api)"
+        MGMT_URL="http://localhost/consumer/cp/management"
+    else
+        echo "   ✗ Management API not accessible via either path"
+        echo "     Will use internal service name"
+        MGMT_URL="http://consumer-controlplane:8082/management"
+    fi
 fi
 echo ""
 
