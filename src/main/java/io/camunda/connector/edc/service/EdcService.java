@@ -211,6 +211,7 @@ public class EdcService {
         }
 
         LOGGER.info("Using offer with ID: {}", offer.get("@id").asText());
+        LOGGER.info("Offer structure from catalog: {}", objectMapper.writeValueAsString(offer));
 
         // Build negotiation request according to EDC Management API v3 spec
         // Use ObjectNode to ensure proper JSON serialization
@@ -235,7 +236,7 @@ public class EdcService {
 
         String requestBody = objectMapper.writeValueAsString(negotiationRequest);
 
-        LOGGER.debug("Negotiation request body: {}", requestBody);
+        LOGGER.info("Contract negotiation request body: {}", requestBody);
         
         HttpRequest httpRequest = buildRequest(
                 negotiationUrl,
