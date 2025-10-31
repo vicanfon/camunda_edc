@@ -2,6 +2,8 @@ package io.camunda.connector.edc.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.camunda.connector.edc.model.EdcConnectorRequest;
 import io.camunda.connector.edc.model.EdcConnectorResponse;
 import org.slf4j.Logger;
@@ -211,19 +213,29 @@ public class EdcService {
         LOGGER.info("Using offer with ID: {}", offer.get("@id").asText());
 
         // Build negotiation request according to EDC Management API v3 spec
-        Map<String, Object> negotiationRequest = new HashMap<>();
-        negotiationRequest.put("@context", List.of("https://w3id.org/edc/connector/management/v0.0.1"));
+        // Use ObjectNode to ensure proper JSON serialization
+        ObjectNode negotiationRequest = objectMapper.createObjectNode();
+
+        // Add @context as array
+        ArrayNode context = objectMapper.createArrayNode();
+        context.add("https://w3id.org/edc/connector/management/v0.0.1");
+        negotiationRequest.set("@context", context);
+
         negotiationRequest.put("@type", "ContractRequest");
         negotiationRequest.put("counterPartyAddress", request.getProviderUrl() + "/api/dsp");
         negotiationRequest.put("counterPartyId", request.getProviderDid());
         negotiationRequest.put("protocol", "dataspace-protocol-http");
 
-        // Use the policy directly from the catalog offer
-        // The offer from catalog is already in the correct format
-        negotiationRequest.put("policy", objectMapper.convertValue(offer, Map.class));
-        negotiationRequest.put("callbackAddresses", List.of());
+        // Use the policy directly from the catalog offer as a JsonNode
+        // This ensures it's serialized as a JSON object, not a string
+        negotiationRequest.set("policy", offer);
+
+        // Add empty callbackAddresses array
+        negotiationRequest.set("callbackAddresses", objectMapper.createArrayNode());
 
         String requestBody = objectMapper.writeValueAsString(negotiationRequest);
+
+        LOGGER.debug("Negotiation request body: {}", requestBody);
         
         HttpRequest httpRequest = buildRequest(
                 negotiationUrl,
